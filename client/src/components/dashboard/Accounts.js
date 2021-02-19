@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import { PlaidLink } from 'react-plaid-link';
 import PlaidLinkButton from "react-plaid-link-button";
 import { connect } from "react-redux";
 import {
@@ -102,7 +103,7 @@ return (
             }}
             plaidLinkProps={{
               clientName: "Plaid App",
-              token: "ink-sandbox-4032dde3-077d-4c93-b3de-33ae8e5e6f88",
+              token: "link-sandbox-4032dde3-077d-4c93-b3de-33ae8e5e6f88",
               env: "sandbox",
               product: ["transactions"],
               onSuccess: this.handleOnSuccess
