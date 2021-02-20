@@ -22,8 +22,7 @@ render() {
               alt="Undraw"
             />
             <h4 className="flow-text">
-              <b>Build</b> a personal banking web app with Plaid and the{" "}
-              <span style={{ fontFamily: "monospace" }}>MERN</span> stack
+              <b>Link</b> your Bank accounts!!
             </h4>
             <br />
             <div className="col s6">

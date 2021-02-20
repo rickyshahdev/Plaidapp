@@ -13,7 +13,7 @@ class Navbar extends Component {
               }}
               className="col s5 brand-logo center black-text"
             >
-            Plaid App
+           Bank Linker
             </Link>
           </div>
         </nav>

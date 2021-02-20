@@ -102,7 +102,7 @@ return (
                 "btn btn-large waves-effect waves-light hoverable blue accent-3 main-btn"
             }}
             plaidLinkProps={{
-              clientName: "Plaid App",
+              clientName: "BankLinker",
               token: "link-sandbox-ac170242-f1e0-4cc5-b44b-8d6d33910ff4",
               env: "sandbox",
               product: ["transactions"],
