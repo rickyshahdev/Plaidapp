@@ -103,7 +103,7 @@ return (
             }}
             plaidLinkProps={{
               clientName: "Plaid App",
-              token: "link-sandbox-4032dde3-077d-4c93-b3de-33ae8e5e6f88",
+              token: "link-sandbox-ac170242-f1e0-4cc5-b44b-8d6d33910ff4",
               env: "sandbox",
               product: ["transactions"],
               onSuccess: this.handleOnSuccess
