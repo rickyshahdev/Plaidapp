@@ -1,7 +1,6 @@
 {
   "name": "client",
   "version": "0.1.0",
-  "description": "link : https://banklinker.herokuapp.com/"
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.11.3",
@@ -24,10 +23,6 @@
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/rickyshahdev/Plaidapp.git"
-  }
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
