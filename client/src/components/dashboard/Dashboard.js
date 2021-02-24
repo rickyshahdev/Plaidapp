@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { usePlaidLink } from 'react-plaid-link';
 import PlaidLinkButton from "react-plaid-link-button";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
@@ -53,9 +52,10 @@ if (accounts === null || accountsLoading) {
                     "btn btn-large waves-effect waves-light hoverable blue accent-3 main-btn"
                 }}
                 plaidLinkProps={{
-                  clientName: "BankLinker",
-                  token: "link-sandbox-ac170242-f1e0-4cc5-b44b-8d6d33910ff4",
-                  env: "sandbox",
+                  clientName:"BankLinker",
+                  key: "",
+                  token:"link-sandbox-a6a87c73-acb8-4a4a-a5e4-1cc2785496f4",
+                  env:"sandbox",
                   product: ["transactions"],
                   onSuccess: this.handleOnSuccess
                 }}

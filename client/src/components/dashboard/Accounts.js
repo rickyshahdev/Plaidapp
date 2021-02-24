@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { PlaidLink } from 'react-plaid-link';
 import PlaidLinkButton from "react-plaid-link-button";
 import { connect } from "react-redux";
 import {
@@ -16,6 +15,7 @@ class Accounts extends Component {
     this.props.getTransactions(accounts);
   }
 // Add account
+
   handleOnSuccess = (token, metadata) => {
     const { accounts } = this.props;
     const plaidData = {
@@ -39,6 +39,7 @@ this.props.addAccount(plaidData);
     e.preventDefault();
     this.props.logoutUser();
   };
+
 render() {
     const { user, accounts } = this.props;
     const { transactions, transactionsLoading } = this.props.plaid;
@@ -103,7 +104,8 @@ return (
             }}
             plaidLinkProps={{
               clientName: "BankLinker",
-              token: "link-sandbox-ac170242-f1e0-4cc5-b44b-8d6d33910ff4",
+              key: "",
+              token: "link-sandbox-a6a87c73-acb8-4a4a-a5e4-1cc2785496f4",
               env: "sandbox",
               product: ["transactions"],
               onSuccess: this.handleOnSuccess

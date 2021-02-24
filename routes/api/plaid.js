@@ -1,6 +1,5 @@
 // read env vars from .env file
 require('dotenv').config();
-const util = require('util');
 const express = require("express");
 const plaid = require("plaid");
 const router = express.Router();
@@ -54,7 +53,7 @@ const client = new plaid.Client({
   secret: PLAID_SECRET,
   env: plaid.environments[PLAID_ENV],
   options: {
-    version: '2019-05-29',
+    version: '2020-09-14',
   },
 });
 
@@ -64,47 +63,7 @@ const client = new plaid.Client({
 // @route POST api/plaid/accounts/add
 // @desc Trades public token for access token and stores credentials in database
 // @access Private
-router.post(
-  "/accounts/add",
-  passport.authenticate("jwt", { session: false }),
-  (req, res) => {
-    PUBLIC_TOKEN = req.body.public_token;
 
-    const userId = req.user.id;
-    const institution = req.body.metadata.institution;
-    const { name, institution_id } = institution;
-
-    if (PUBLIC_TOKEN) {
-          client
-            .exchangePublicToken(PUBLIC_TOKEN)
-            .then(exchangeResponse => {
-              ACCESS_TOKEN = exchangeResponse.access_token;
-              ITEM_ID = exchangeResponse.item_id;
-    // Check if account already exists for specific user
-              Account.findOne({
-                userId: req.user.id,
-                institutionId: institution_id
-              })
-                .then(account => {
-                  if (account) {
-                    console.log("Account already exists");
-                  } else {
-                    const newAccount = new Account({
-                      userId: userId,
-                      accessToken: ACCESS_TOKEN,
-                      itemId: ITEM_ID,
-                      institutionId: institution_id,
-                      institutionName: name
-                    });
-    newAccount.save().then(account => res.json(account));
-                  }
-                })
-                .catch(err => console.log(err)); // Mongo Error
-            })
-            .catch(err => console.log(err)); // Plaid Error
-        }
-      }
-    );
     router.post('/api/info', function (request, response, next) {
       response.json({
         item_id: ITEM_ID,
@@ -142,6 +101,47 @@ router.post(
      response.json(createTokenResponse);
    });
  });
+ router.post(
+   "/accounts/add",
+   passport.authenticate("jwt", { session: false }),
+   (req, res) => {
+     PUBLIC_TOKEN = req.body.public_token;
+
+     const userId = req.user.id;
+     const institution = req.body.metadata.institution;
+     const { name, institution_id } = institution;
+
+     if (PUBLIC_TOKEN) {
+           client
+             .exchangePublicToken(PUBLIC_TOKEN)
+             .then(exchangeResponse => {
+               ACCESS_TOKEN = exchangeResponse.access_token;
+               ITEM_ID = exchangeResponse.item_id;
+     // Check if account already exists for specific user
+               Account.findOne({
+                 userId: req.user.id,
+                 institutionId: institution_id
+               })
+                 .then(account => {
+                   if (account) {
+                     console.log("Account already exists");
+                   } else {
+                     const newAccount = new Account({
+                       userId: userId,
+                       accessToken: ACCESS_TOKEN,
+                       itemId: ITEM_ID,
+                       institutionId: institution_id,
+                       institutionName: name
+                     });
+     newAccount.save().then(account => res.json(account));
+                   }
+                 })
+                 .catch(err => console.log(err)); // Mongo Error
+             })
+             .catch(err => console.log(err)); // Plaid Error
+         }
+       }
+     );
       // @route DELETE api/plaid/accounts/:id
       // @desc Delete account with given id
       // @access Private
