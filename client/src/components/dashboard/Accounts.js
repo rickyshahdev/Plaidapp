@@ -105,7 +105,7 @@ return (
             plaidLinkProps={{
               clientName: "BankLinker",
               key: "",
-              token: "link-sandbox-a6a87c73-acb8-4a4a-a5e4-1cc2785496f4",
+              token: "link-sandbox-2a5857a7-16cf-44a3-bb09-cf3650e0aefa",
               env: "sandbox",
               product: ["transactions"],
               onSuccess: this.handleOnSuccess
