@@ -54,7 +54,7 @@ if (accounts === null || accountsLoading) {
                 plaidLinkProps={{
                   clientName:"BankLinker",
                   key: "",
-                  token:"link-sandbox-2a5857a7-16cf-44a3-bb09-cf3650e0aefa",
+                  token:"link-sandbox-00cc3d46-c0ca-4488-9733-d96bde570c1e",
                   env:"sandbox",
                   product: ["transactions"],
                   onSuccess: this.handleOnSuccess

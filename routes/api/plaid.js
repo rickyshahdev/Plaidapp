@@ -64,7 +64,9 @@ const client = new plaid.Client({
 // @desc Trades public token for access token and stores credentials in database
 // @access Private
 
-    router.post('/api/info', function (request, response, next) {
+    router.post('/api/info',
+  passport.authenticate("jwt", { session: false }),
+    function (request, response, next) {
       response.json({
         item_id: ITEM_ID,
         access_token: ACCESS_TOKEN,
@@ -72,7 +74,9 @@ const client = new plaid.Client({
       });
     });
 
-    router.post('/api/create_link_token', function (request, response, next) {
+    router.post('/api/create_link_token',
+  passport.authenticate("jwt", { session: false }),
+    function (request, response, next) {
       const configs = {
         user: {
           // This should correspond to a unique id for the current user.
@@ -101,6 +105,30 @@ const client = new plaid.Client({
      response.json(createTokenResponse);
    });
  });
+
+ // Exchange token flow - exchange a Link public_token for
+// an API access_token
+// https://plaid.com/docs/#exchange-token-flow
+router.post('/api/set_access_token', function (request, response, next) {
+  PUBLIC_TOKEN = request.body.public_token;
+  client.exchangePublicToken(PUBLIC_TOKEN, function (error, tokenResponse) {
+    if (error != null) {
+      prettyPrintResponse(error);
+      return response.json({
+        error,
+      });
+    }
+    ACCESS_TOKEN = tokenResponse.access_token;
+    ITEM_ID = tokenResponse.item_id;
+    prettyPrintResponse(tokenResponse);
+    response.json({
+      access_token: ACCESS_TOKEN,
+      item_id: ITEM_ID,
+      error: null,
+    });
+  });
+});
+
  router.post(
    "/accounts/add",
    passport.authenticate("jwt", { session: false }),
@@ -114,9 +142,9 @@ const client = new plaid.Client({
      if (PUBLIC_TOKEN) {
            client
              .exchangePublicToken(PUBLIC_TOKEN)
-             .then(exchangeResponse => {
-               ACCESS_TOKEN = exchangeResponse.access_token;
-               ITEM_ID = exchangeResponse.item_id;
+             .then(tokenResponse => {
+               ACCESS_TOKEN = tokenResponse.access_token;
+               ITEM_ID = tokenResponse.item_id;
      // Check if account already exists for specific user
                Account.findOne({
                  userId: req.user.id,
@@ -177,7 +205,7 @@ router.post(
   (req, res) => {
     const now = moment();
     const today = now.format("YYYY-MM-DD");
-    const thirtyDaysAgo = now.subtract(30, "days").format("YYYY-MM-DD"); // Change this if you want more transactions
+    const thirtyDaysAgo = now.subtract(365, "days").format("YYYY-MM-DD"); // Change this if you want more transactions
 let transactions = [];
 const accounts = req.body;
 if (accounts) {

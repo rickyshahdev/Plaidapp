@@ -14,6 +14,8 @@ class Accounts extends Component {
     const { accounts } = this.props;
     this.props.getTransactions(accounts);
   }
+
+
 // Add account
 
   handleOnSuccess = (token, metadata) => {
@@ -21,9 +23,12 @@ class Accounts extends Component {
     const plaidData = {
       public_token: token,
       metadata: metadata,
-      accounts: accounts
+      accounts: accounts,
+      webhook: "https://sandbox.plaid.com/transactions/get",
+
     };
 this.props.addAccount(plaidData);
+
   };
 // Delete account
   onDeleteClick = id => {
@@ -104,11 +109,11 @@ return (
             }}
             plaidLinkProps={{
               clientName: "BankLinker",
-              key: "",
-              token: "link-sandbox-2a5857a7-16cf-44a3-bb09-cf3650e0aefa",
+              key:" ",
+              token: "link-sandbox-00cc3d46-c0ca-4488-9733-d96bde570c1e",
               env: "sandbox",
               product: ["transactions"],
-              onSuccess: this.handleOnSuccess
+              onSuccess: this.handleOnSuccess,
             }}
             onScriptLoad={() => this.setState({ loaded: true })}
           >
