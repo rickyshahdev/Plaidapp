@@ -52,9 +52,9 @@ if (accounts === null || accountsLoading) {
                     "btn btn-large waves-effect waves-light hoverable blue accent-3 main-btn"
                 }}
                 plaidLinkProps={{
-                  clientName:"BankLinker",
+                  clientName:"BankConnector",
                   key: "",
-                  token:"link-sandbox-00cc3d46-c0ca-4488-9733-d96bde570c1e",
+                  token:"link-sandbox-4be795dd-ba66-4ee9-ac53-ab8070e47bfc",
                   env:"sandbox",
                   product: ["transactions"],
                   onSuccess: this.handleOnSuccess

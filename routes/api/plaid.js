@@ -86,6 +86,7 @@ const client = new plaid.Client({
         products: PLAID_PRODUCTS,
         country_codes: PLAID_COUNTRY_CODES,
         language: 'en',
+        webhook: 'https://sample-web-hook.com',
       };
       if (PLAID_REDIRECT_URI !== '') {
      configs.redirect_uri = PLAID_REDIRECT_URI;
@@ -127,6 +128,20 @@ router.post('/api/set_access_token', function (request, response, next) {
       error: null,
     });
   });
+});
+
+router.post('/get_access_token', async (request, response) => {
+  try {
+    const PUBLIC_TOKEN = request.body.public_token;
+    // Exchange the client-side public_token for a server access_token
+    const tokenResponse = await client.exchangePublicToken(PUBLIC_TOKEN);
+    // Save the access_token and item_id to a persistent database
+    const ACCESS_TOKEN = tokenResponse.access_token;
+    const ITEM_ID = tokenResponse.item_id;
+  } catch (e) {
+    // Display error on client
+    return response.send({ error: e.message });
+  }
 });
 
  router.post(

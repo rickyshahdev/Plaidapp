@@ -24,9 +24,10 @@ class Accounts extends Component {
       public_token: token,
       metadata: metadata,
       accounts: accounts,
-      webhook: "https://sandbox.plaid.com/transactions/get",
 
     };
+    // send public_token to server
+
 this.props.addAccount(plaidData);
 
   };
@@ -110,7 +111,7 @@ return (
             plaidLinkProps={{
               clientName: "BankLinker",
               key:" ",
-              token: "link-sandbox-00cc3d46-c0ca-4488-9733-d96bde570c1e",
+              token: "link-sandbox-4be795dd-ba66-4ee9-ac53-ab8070e47bfc",
               env: "sandbox",
               product: ["transactions"],
               onSuccess: this.handleOnSuccess,
