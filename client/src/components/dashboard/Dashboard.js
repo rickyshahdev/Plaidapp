@@ -54,9 +54,10 @@ if (accounts === null || accountsLoading) {
                 plaidLinkProps={{
                   clientName:"BankConnector",
                   key: "",
-                  token:"link-sandbox-4be795dd-ba66-4ee9-ac53-ab8070e47bfc",
+                  token:"link-sandbox-d5ccdb0a-8547-4306-8b85-68bec1f2cc82",
                   env:"sandbox",
                   product: ["transactions"],
+                  webhook: "https://webhook.site/c9cdcac9-8194-41b7-9369-0f725a898281",
                   onSuccess: this.handleOnSuccess
                 }}
                 onScriptLoad={() => this.setState({ loaded: true })}

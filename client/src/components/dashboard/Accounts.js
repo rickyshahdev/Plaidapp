@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import PlaidLinkButton from "react-plaid-link-button";
+import Plaid from "plaid";
+import $ from "jquery";
 import { connect } from "react-redux";
 import {
   getTransactions,
@@ -10,17 +12,16 @@ import {
 import { logoutUser } from "../../actions/authActions";
 import MaterialTable from "material-table"; // https://mbrn.github.io/material-table/#/
 class Accounts extends Component {
-  componentDidMount() {
-    const { accounts } = this.props;
-    this.props.getTransactions(accounts);
+  async componentDidMount() {
+    const { accounts } = await this.props;
+    await this.props.getTransactions(accounts);
   }
-
-
 // Add account
 
-  handleOnSuccess = (token, metadata) => {
-    const { accounts } = this.props;
-    const plaidData = {
+ handleOnSuccess = async (token, metadata) => {
+    const { accounts } = await this.props;
+
+const plaidData =  {
       public_token: token,
       metadata: metadata,
       accounts: accounts,
@@ -46,7 +47,7 @@ this.props.addAccount(plaidData);
     this.props.logoutUser();
   };
 
-render() {
+render = () => {
     const { user, accounts } = this.props;
     const { transactions, transactionsLoading } = this.props.plaid;
 let accountItems = accounts.map(account => (
@@ -71,8 +72,8 @@ let accountItems = accounts.map(account => (
     ];
 let transactionsData = [];
     transactions.forEach(function(account) {
-      account.transactions.forEach(function(transaction) {
-        transactionsData.push({
+      account.transactions.forEach(async function(transaction) {
+        await transactionsData.push({
           account: account.accountName,
           date: transaction.date,
           category: transaction.category[0],
@@ -109,14 +110,15 @@ return (
                 "btn btn-large waves-effect waves-light hoverable blue accent-3 main-btn"
             }}
             plaidLinkProps={{
-              clientName: "BankLinker",
+              clientName: "BankConnector",
               key:" ",
-              token: "link-sandbox-4be795dd-ba66-4ee9-ac53-ab8070e47bfc",
+              token: "link-sandbox-d5ccdb0a-8547-4306-8b85-68bec1f2cc82",
               env: "sandbox",
               product: ["transactions"],
-              onSuccess: this.handleOnSuccess,
+              onSuccess: this.handleOnSuccess
+
             }}
-            onScriptLoad={() => this.setState({ loaded: true })}
+
           >
             Add Account
           </PlaidLinkButton>
@@ -136,7 +138,7 @@ return (
                 ) : (
                   <span> account </span>
                 )}
-                from the past 30 days
+                from the past 12 months
               </p>
               <MaterialTable
                 columns={transactionsColumns}

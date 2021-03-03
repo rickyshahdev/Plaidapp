@@ -66,8 +66,8 @@ const client = new plaid.Client({
 
     router.post('/api/info',
   passport.authenticate("jwt", { session: false }),
-    function (request, response, next) {
-      response.json({
+    async function (request, response, next) {
+      await response.json({
         item_id: ITEM_ID,
         access_token: ACCESS_TOKEN,
         products: PLAID_PRODUCTS,
@@ -76,9 +76,9 @@ const client = new plaid.Client({
 
     router.post('/api/create_link_token',
   passport.authenticate("jwt", { session: false }),
-    function (request, response, next) {
-      const configs = {
-        user: {
+  async function (request, response, next) {
+      const configs =  {
+        user: await {
           // This should correspond to a unique id for the current user.
           client_user_id: 'user-id',
         },
@@ -86,7 +86,7 @@ const client = new plaid.Client({
         products: PLAID_PRODUCTS,
         country_codes: PLAID_COUNTRY_CODES,
         language: 'en',
-        webhook: 'https://sample-web-hook.com',
+        webhook: 'https://webhook.site/c9cdcac9-8194-41b7-9369-0f725a898281',
       };
       if (PLAID_REDIRECT_URI !== '') {
      configs.redirect_uri = PLAID_REDIRECT_URI;
@@ -96,7 +96,7 @@ const client = new plaid.Client({
      configs.android_package_name = PLAID_ANDROID_PACKAGE_NAME;
    }
 
-   client.createLinkToken(configs, function (error, createTokenResponse) {
+   await client.createLinkToken(configs, function (error, createTokenResponse) {
      if (error != null) {
        prettyPrintResponse(error);
        return response.json({
@@ -110,9 +110,9 @@ const client = new plaid.Client({
  // Exchange token flow - exchange a Link public_token for
 // an API access_token
 // https://plaid.com/docs/#exchange-token-flow
-router.post('/api/set_access_token', function (request, response, next) {
+router.post('/api/set_access_token', async function (request, response, next) {
   PUBLIC_TOKEN = request.body.public_token;
-  client.exchangePublicToken(PUBLIC_TOKEN, function (error, tokenResponse) {
+  await client.exchangePublicToken(PUBLIC_TOKEN, function (error, tokenResponse) {
     if (error != null) {
       prettyPrintResponse(error);
       return response.json({
@@ -130,32 +130,18 @@ router.post('/api/set_access_token', function (request, response, next) {
   });
 });
 
-router.post('/get_access_token', async (request, response) => {
-  try {
-    const PUBLIC_TOKEN = request.body.public_token;
-    // Exchange the client-side public_token for a server access_token
-    const tokenResponse = await client.exchangePublicToken(PUBLIC_TOKEN);
-    // Save the access_token and item_id to a persistent database
-    const ACCESS_TOKEN = tokenResponse.access_token;
-    const ITEM_ID = tokenResponse.item_id;
-  } catch (e) {
-    // Display error on client
-    return response.send({ error: e.message });
-  }
-});
-
  router.post(
    "/accounts/add",
    passport.authenticate("jwt", { session: false }),
-   (req, res) => {
+   async (req, res) => {
      PUBLIC_TOKEN = req.body.public_token;
 
-     const userId = req.user.id;
+     const userId =  await req.user.id;
      const institution = req.body.metadata.institution;
      const { name, institution_id } = institution;
 
      if (PUBLIC_TOKEN) {
-           client
+           await client
              .exchangePublicToken(PUBLIC_TOKEN)
              .then(tokenResponse => {
                ACCESS_TOKEN = tokenResponse.access_token;
@@ -204,8 +190,8 @@ router.post('/get_access_token', async (request, response) => {
 router.get(
   "/accounts",
   passport.authenticate("jwt", { session: false }),
-  (req, res) => {
-    Account.find({ userId: req.user.id })
+  async (req, res) => {
+  await Account.find({ userId: req.user.id })
       .then(accounts => res.json(accounts))
       .catch(err => console.log(err));
   }
@@ -217,17 +203,17 @@ router.get(
 router.post(
   "/accounts/transactions",
   passport.authenticate("jwt", { session: false }),
-  (req, res) => {
+  async (req, res) => {
     const now = moment();
     const today = now.format("YYYY-MM-DD");
     const thirtyDaysAgo = now.subtract(365, "days").format("YYYY-MM-DD"); // Change this if you want more transactions
 let transactions = [];
-const accounts = req.body;
+const accounts = await req.body;
 if (accounts) {
-      accounts.forEach(function(account) {
-        ACCESS_TOKEN = account.accessToken;
+      accounts.forEach(async function(account) {
+        ACCESS_TOKEN = await account.accessToken;
         const institutionName = account.institutionName;
-client
+await client
           .getTransactions(ACCESS_TOKEN, thirtyDaysAgo, today)
           .then(response => {
             transactions.push({
@@ -244,5 +230,51 @@ if (transactions.length === accounts.length) {
     }
   }
 );
+// Retrieve information about an Item
+// https://plaid.com/docs/#retrieve-item
+router.get('/api/item', function (request, response, next) {
+  // Pull the Item - this includes information about available products,
+  // billed products, webhook information, and more.
+  client.getItem(ACCESS_TOKEN, function (error, itemResponse) {
+    if (error != null) {
+      prettyPrintResponse(error);
+      return response.json({
+        error,
+      });
+    }
+    // Also pull information about the institution
+    client.getInstitutionById(
+      itemResponse.item.institution_id,
+      function (err, instRes) {
+        if (err != null) {
+          const msg =
+            'Unable to pull institution information from the Plaid API.';
+          console.log(msg + '\n' + JSON.stringify(error));
+          return response.json({
+            error: msg,
+          });
+        } else {
+          prettyPrintResponse(itemResponse);
+          response.json({
+            item: itemResponse.item,
+            institution: instRes.institution,
+          });
+        }
+      },
+    );
+  });
+});
 
+router.post("/item/webhook/update", async (req, res) => {
+  // Update the webhook associated with an Item
+const response = await client
+  .updateItemWebhook(accessToken, 'https://example.com/updated/webhook')
+  .catch((err) => {
+    // handle error
+  });
+
+// A successful response indicates that the webhook has been
+// updated. An acknowledgement webhook will also be fired.
+const item = result.item;
+})
 module.exports = router;

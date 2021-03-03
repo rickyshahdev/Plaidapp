@@ -10,18 +10,18 @@ import {
 // Actions will go here
 
 // Add account
-export const addAccount = plaidData => dispatch => {
-  const accounts = plaidData.accounts;
-  axios
+export const addAccount = plaidData => async dispatch => {
+  const accounts =  await plaidData.accounts;
+  await axios
     .post("/api/plaid/accounts/add", plaidData)
     .then(res =>
-      dispatch({
+       dispatch({
         type: ADD_ACCOUNT,
         payload: res.data
       })
     )
     .then(data =>
-      accounts ? dispatch(getTransactions(accounts.concat(data.payload))) : null
+      accounts ?  dispatch(getTransactions(accounts.concat(data.payload))) : null
     )
     .catch(err => console.log(err));
 };
@@ -47,9 +47,9 @@ export const deleteAccount = plaidData => dispatch => {
 };
 
 // Get all accounts for specific user
-export const getAccounts = () => dispatch => {
+export const getAccounts = () => async dispatch => {
   dispatch(setAccountsLoading());
-  axios
+  await axios
     .get("/api/plaid/accounts")
     .then(res =>
       dispatch({
@@ -71,9 +71,9 @@ export const setAccountsLoading = () => {
   };
 };
 // Get Transactions
-export const getTransactions = plaidData => dispatch => {
+export const getTransactions = plaidData => async dispatch => {
   dispatch(setTransactionsLoading());
-  axios
+  await axios
     .post("/api/plaid/accounts/transactions", plaidData)
     .then(res =>
       dispatch({
@@ -90,7 +90,7 @@ export const getTransactions = plaidData => dispatch => {
 };
 // Transactions loading
 export const setTransactionsLoading = () => {
-  return {
+  return{
     type: TRANSACTIONS_LOADING
   };
 };
