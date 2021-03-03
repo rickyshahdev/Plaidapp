@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const cors = require("cors")
-
+const db = mongoose.connection
 const users = require("./routes/api/users");
 const plaid = require("./routes/api/plaid");
 
@@ -19,12 +19,12 @@ app.use(bodyParser.json());
 app.use(cors())
 
 // DB Config
-const db = require("./config/keys").mongoURI;
+const mongodbURI = require("./config/keys").mongoURI;
 
 // Connect to MongoDB
 mongoose
   .connect(
-    db,
+    mongodbURI,
     { useNewUrlParser: true ,
       useUnifiedTopology: true,
       useFindAndModify: false,
@@ -33,7 +33,8 @@ mongoose
   )
   .then(() => console.log("MongoDB successfully connected"))
   .catch(err => console.log(err));
-
+  db.on('error', err => console.log(err.message + ' is mongod not running?'))
+  db.on('disconnected', () => console.log('mongo disconnected'))
 // Passport middleware
 app.use(passport.initialize());
 
