@@ -2,33 +2,56 @@ import React, { Component } from "react";
 import PlaidLinkButton from "react-plaid-link-button";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import axios from "axios";
 import { logoutUser } from "../../actions/authActions";
 import { getAccounts, addAccount } from "../../actions/accountActions";
 import Accounts from "./Accounts";
 import Spinner from "./Spinner";
 
 class Dashboard extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      plaidLinkToken: null,
+      loadingLinkToken: true
+    }
+  }
   componentDidMount() {
     this.props.getAccounts();
+
+    axios
+      .post("http://localhost:5000/api/plaid/api/create_link_token")
+      .then(this.setLinkToken)
+      .catch(err => console.log(err));
   }
-// Logout
+  setLinkToken = response => {
+    const { data, status } = response;
+    if(status === 200) {
+      this.setState({ plaidLinkToken: data.link_token, loadingLinkToken: false })
+    } else {
+      // error
+      console.error(response)
+    }
+  }
+  // Logout
   onLogoutClick = e => {
     e.preventDefault();
     this.props.logoutUser();
   };
-// Add account
+  // Add account
   handleOnSuccess = (token, metadata) => {
     const plaidData = {
       public_token: token,
       metadata: metadata
     };
-this.props.addAccount(plaidData);
+    this.props.addAccount(plaidData);
   };
-render() {
+  render() {
     const { user } = this.props.auth;
     const { accounts, accountsLoading } = this.props.plaid;
-let dashboardContent;
-if (accounts === null || accountsLoading) {
+    let dashboardContent;
+    if (accounts === null || accountsLoading || this.state.loadingLinkToken) {
       dashboardContent = <Spinner />;
       dashboardContent = <p className="center-align">Loading...</p>;
     } else if (accounts.length > 0) {
@@ -52,10 +75,10 @@ if (accounts === null || accountsLoading) {
                     "btn btn-large waves-effect waves-light hoverable blue accent-3 main-btn"
                 }}
                 plaidLinkProps={{
-                  clientName:"BankConnector",
+                  clientName: "BankConnector",
                   key: "",
-                  token:"link-sandbox-4be795dd-ba66-4ee9-ac53-ab8070e47bfc",
-                  env:"sandbox",
+                  token: this.state.plaidLinkToken,
+                  env: "sandbox",
                   product: ["transactions"],
                   onSuccess: this.handleOnSuccess
                 }}
@@ -74,7 +97,7 @@ if (accounts === null || accountsLoading) {
         </div>
       );
     }
-return <div className="container">{dashboardContent}</div>;
+    return <div className="container">{dashboardContent}</div>;
   }
 }
 Dashboard.propTypes = {
