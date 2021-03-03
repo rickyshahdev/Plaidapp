@@ -6,7 +6,7 @@ const cors = require("cors")
 const db = mongoose.connection
 const users = require("./routes/api/users");
 const plaid = require("./routes/api/plaid");
-
+require('dotenv').config()
 const app = express();
 
 // Bodyparser middleware
