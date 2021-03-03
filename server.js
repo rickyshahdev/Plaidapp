@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const passport = require("passport");
-
+const cors = require("cors")
 
 const users = require("./routes/api/users");
 const plaid = require("./routes/api/plaid");
@@ -16,7 +16,7 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-
+app.use(cors())
 
 // DB Config
 const db = require("./config/keys").mongoURI;

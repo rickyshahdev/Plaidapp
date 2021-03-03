@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import PlaidLinkButton from "react-plaid-link-button";
-import Plaid from "plaid";
-import $ from "jquery";
 import { connect } from "react-redux";
+import axios from "axios";
+import Spinner from "./Spinner";
 import {
   getTransactions,
   addAccount,
@@ -12,14 +12,36 @@ import {
 import { logoutUser } from "../../actions/authActions";
 import MaterialTable from "material-table"; // https://mbrn.github.io/material-table/#/
 class Accounts extends Component {
-  async componentDidMount() {
-    const { accounts } = await this.props;
-    await this.props.getTransactions(accounts);
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      plaidLinkToken: null,
+      loadingLinkToken: true
+    }
   }
+  componentDidMount() {
+    const { accounts } = this.props;
+    this.props.getTransactions(accounts);
+    axios
+      .post("http://localhost:5000/api/plaid/api/create_link_token")
+      .then(this.setLinkToken)
+      .catch(err => console.log(err));
+  }
+  setLinkToken = response => {
+    const { data, status } = response;
+    if(status === 200) {
+      this.setState({ plaidLinkToken: data.link_token, loadingLinkToken: false })
+    } else {
+      // error
+      console.error(response)
+    }
+  }
+
 // Add account
 
- handleOnSuccess = async (token, metadata) => {
-    const { accounts } = await this.props;
+ handleOnSuccess = (token, metadata) => {
+    const { accounts } =  this.props;
 
 const plaidData =  {
       public_token: token,
@@ -28,10 +50,8 @@ const plaidData =  {
 
     };
     // send public_token to server
-
 this.props.addAccount(plaidData);
-
-  };
+};
 // Delete account
   onDeleteClick = id => {
     const { accounts } = this.props;
@@ -72,8 +92,8 @@ let accountItems = accounts.map(account => (
     ];
 let transactionsData = [];
     transactions.forEach(function(account) {
-      account.transactions.forEach(async function(transaction) {
-        await transactionsData.push({
+      account.transactions.forEach(function(transaction) {
+         transactionsData.push({
           account: account.accountName,
           date: transaction.date,
           category: transaction.category[0],
@@ -82,7 +102,12 @@ let transactionsData = [];
         });
       });
     });
-return (
+    let accountContent;
+  if(transactionsData === null || transactionsLoading || this.state.loadingLinkToken){
+    transactionsData = <Spinner />;
+    transactionsData = <p className="center-align">Loading...</p>;
+  }else {
+ accountContent = (
       <div className="row">
         <div className="col s12">
           <button
@@ -149,7 +174,9 @@ return (
           )}
         </div>
       </div>
-    );
+      );
+    }
+    return <div className="container">{accountContent}</div>;
   }
 }
 Accounts.propTypes = {
