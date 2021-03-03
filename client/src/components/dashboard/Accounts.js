@@ -112,7 +112,7 @@ return (
             plaidLinkProps={{
               clientName: "BankConnector",
               key:" ",
-              token: "link-sandbox-d5ccdb0a-8547-4306-8b85-68bec1f2cc82",
+              token: this.state.plaidLinkToken,
               env: "sandbox",
               product: ["transactions"],
               onSuccess: this.handleOnSuccess

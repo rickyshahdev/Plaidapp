@@ -64,64 +64,64 @@ const client = new plaid.Client({
 // @desc Trades public token for access token and stores credentials in database
 // @access Private
 
-    router.post('/api/info',
+router.post('/api/info',
   passport.authenticate("jwt", { session: false }),
-    async function (request, response, next) {
-      await response.json({
-        item_id: ITEM_ID,
-        access_token: ACCESS_TOKEN,
-        products: PLAID_PRODUCTS,
-      });
+  function (request, response, next) {
+    response.json({
+      item_id: ITEM_ID,
+      access_token: ACCESS_TOKEN,
+      products: PLAID_PRODUCTS,
     });
+  });
 
-    router.post('/api/create_link_token',
+router.post('/api/create_link_token',
   passport.authenticate("jwt", { session: false }),
-  async function (request, response, next) {
-      const configs =  {
-        user: await {
-          // This should correspond to a unique id for the current user.
-          client_user_id: 'user-id',
-        },
-        client_name: 'Bank App',
-        products: PLAID_PRODUCTS,
-        country_codes: PLAID_COUNTRY_CODES,
-        language: 'en',
-        webhook: 'https://webhook.site/c9cdcac9-8194-41b7-9369-0f725a898281',
-      };
-      if (PLAID_REDIRECT_URI !== '') {
-     configs.redirect_uri = PLAID_REDIRECT_URI;
-   }
+  function (request, response, next) {
+    const configs = {
+      user: {
+        // This should correspond to a unique id for the current user.
+        client_user_id: 'user-id',
+      },
+      client_name: 'Bank App',
+      products: PLAID_PRODUCTS,
+      country_codes: PLAID_COUNTRY_CODES,
+      language: 'en',
+      webhook: 'https://sample-web-hook.com',
+    };
+    if (PLAID_REDIRECT_URI !== '') {
+      configs.redirect_uri = PLAID_REDIRECT_URI;
+    }
 
-   if (PLAID_ANDROID_PACKAGE_NAME !== '') {
-     configs.android_package_name = PLAID_ANDROID_PACKAGE_NAME;
-   }
+    if (PLAID_ANDROID_PACKAGE_NAME !== '') {
+      configs.android_package_name = PLAID_ANDROID_PACKAGE_NAME;
+    }
 
-   await client.createLinkToken(configs, function (error, createTokenResponse) {
-     if (error != null) {
-       prettyPrintResponse(error);
-       return response.json({
-         error: error,
-       });
-     }
-     response.json(createTokenResponse);
-   });
- });
+    client.createLinkToken(configs, function (error, createTokenResponse) {
+      if (error != null) {
+        console.error(error);
+        return response.json({
+          error: error,
+        });
+      }
+      response.json(createTokenResponse);
+    });
+  });
 
- // Exchange token flow - exchange a Link public_token for
+// Exchange token flow - exchange a Link public_token for
 // an API access_token
 // https://plaid.com/docs/#exchange-token-flow
 router.post('/api/set_access_token', async function (request, response, next) {
   PUBLIC_TOKEN = request.body.public_token;
   await client.exchangePublicToken(PUBLIC_TOKEN, function (error, tokenResponse) {
     if (error != null) {
-      prettyPrintResponse(error);
+      console.error(error);
       return response.json({
         error,
       });
     }
     ACCESS_TOKEN = tokenResponse.access_token;
     ITEM_ID = tokenResponse.item_id;
-    prettyPrintResponse(tokenResponse);
+    console.log(tokenResponse);
     response.json({
       access_token: ACCESS_TOKEN,
       item_id: ITEM_ID,
@@ -130,61 +130,75 @@ router.post('/api/set_access_token', async function (request, response, next) {
   });
 });
 
- router.post(
-   "/accounts/add",
-   passport.authenticate("jwt", { session: false }),
-   async (req, res) => {
-     PUBLIC_TOKEN = req.body.public_token;
+router.post('/get_access_token', async (request, response) => {
+  try {
+    const PUBLIC_TOKEN = request.body.public_token;
+    // Exchange the client-side public_token for a server access_token
+    const tokenResponse = await client.exchangePublicToken(PUBLIC_TOKEN);
+    // Save the access_token and item_id to a persistent database
+    const ACCESS_TOKEN = tokenResponse.access_token;
+    const ITEM_ID = tokenResponse.item_id;
+  } catch (e) {
+    // Display error on client
+    return response.send({ error: e.message });
+  }
+});
 
-     const userId =  await req.user.id;
-     const institution = req.body.metadata.institution;
-     const { name, institution_id } = institution;
+router.post(
+  "/accounts/add",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    PUBLIC_TOKEN = req.body.public_token;
 
-     if (PUBLIC_TOKEN) {
-           await client
-             .exchangePublicToken(PUBLIC_TOKEN)
-             .then(tokenResponse => {
-               ACCESS_TOKEN = tokenResponse.access_token;
-               ITEM_ID = tokenResponse.item_id;
-     // Check if account already exists for specific user
-               Account.findOne({
-                 userId: req.user.id,
-                 institutionId: institution_id
-               })
-                 .then(account => {
-                   if (account) {
-                     console.log("Account already exists");
-                   } else {
-                     const newAccount = new Account({
-                       userId: userId,
-                       accessToken: ACCESS_TOKEN,
-                       itemId: ITEM_ID,
-                       institutionId: institution_id,
-                       institutionName: name
-                     });
-     newAccount.save().then(account => res.json(account));
-                   }
-                 })
-                 .catch(err => console.log(err)); // Mongo Error
-             })
-             .catch(err => console.log(err)); // Plaid Error
-         }
-       }
-     );
-      // @route DELETE api/plaid/accounts/:id
-      // @desc Delete account with given id
-      // @access Private
-      router.delete(
-        "/accounts/:id",
-        passport.authenticate("jwt", { session: false }),
-        (req, res) => {
-          Account.findById(req.params.id).then(account => {
-            // Delete account
-            account.remove().then(() => res.json({ success: true }));
-          });
-        });
+    const userId = req.user.id;
+    const institution = req.body.metadata.institution;
+    const { name, institution_id } = institution;
 
-        // @route GET api/plaid/accounts
+    if (PUBLIC_TOKEN) {
+      client
+        .exchangePublicToken(PUBLIC_TOKEN)
+        .then(tokenResponse => {
+          ACCESS_TOKEN = tokenResponse.access_token;
+          ITEM_ID = tokenResponse.item_id;
+          // Check if account already exists for specific user
+          Account.findOne({
+            userId: req.user.id,
+            institutionId: institution_id
+          })
+            .then(account => {
+              if (account) {
+                console.log("Account already exists");
+              } else {
+                const newAccount = new Account({
+                  userId: userId,
+                  accessToken: ACCESS_TOKEN,
+                  itemId: ITEM_ID,
+                  institutionId: institution_id,
+                  institutionName: name
+                });
+                newAccount.save().then(account => res.json(account));
+              }
+            })
+            .catch(err => console.log(err)); // Mongo Error
+        })
+        .catch(err => console.log(err)); // Plaid Error
+    }
+  }
+);
+// @route DELETE api/plaid/accounts/:id
+// @desc Delete account with given id
+// @access Private
+router.delete(
+  "/accounts/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Account.findById(req.params.id).then(account => {
+      // Delete account
+      account.remove().then(() => res.json({ success: true }));
+    });
+  });
+
+// @route GET api/plaid/accounts
 // @desc Get all accounts linked with plaid for a specific user
 // @access Private
 router.get(
@@ -207,21 +221,21 @@ router.post(
     const now = moment();
     const today = now.format("YYYY-MM-DD");
     const thirtyDaysAgo = now.subtract(365, "days").format("YYYY-MM-DD"); // Change this if you want more transactions
-let transactions = [];
-const accounts = await req.body;
-if (accounts) {
-      accounts.forEach(async function(account) {
-        ACCESS_TOKEN = await account.accessToken;
+    let transactions = [];
+    const accounts = req.body;
+    if (accounts) {
+      accounts.forEach(function (account) {
+        ACCESS_TOKEN = account.accessToken;
         const institutionName = account.institutionName;
-await client
+        client
           .getTransactions(ACCESS_TOKEN, thirtyDaysAgo, today)
           .then(response => {
             transactions.push({
               accountName: institutionName,
               transactions: response.transactions
             });
-// Don't send back response till all transactions have been added
-if (transactions.length === accounts.length) {
+            // Don't send back response till all transactions have been added
+            if (transactions.length === accounts.length) {
               res.json(transactions);
             }
           })
