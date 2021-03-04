@@ -108,6 +108,7 @@ let transactionsData = [];
     transactionsData = <p className="center-align">Loading...</p>;
   }else {
  accountContent = (
+
       <div className="row">
         <div className="col s12">
           <button
@@ -116,19 +117,40 @@ let transactionsData = [];
           >
             <i className="material-icons left">keyboard_backspace</i> Log Out
           </button>
+
+{/* ========== Carole deleted/added =========== */}
+{/*
           <h4>
             <b>Welcome!</b>
           </h4>
           <p className="grey-text text-darken-1">
             Hey there, {user.name.split(" ")[0]}
           </p>
-          <h5>
+*/}
+
+        <div className="bankTitle">
+          Unite Bank
+        </div>
+
+          <h5 className="linkedAccounts">
             <b>Linked Accounts</b>
           </h5>
+
+{/*
           <p className="grey-text text-darken-1">
             Add or remove your bank accounts below
           </p>
-          <ul>{accountItems}</ul>
+*/}
+          <div className="accountSection">
+            <ul>{accountItems}</ul>
+            <ul className="balanceButtons">
+              <button className="balance"> Current Balance </button>
+              <button className="balance"> Current Balance </button>
+            </ul>
+          </div>
+
+{/* =============  End Carole added =========== */}
+
           <PlaidLinkButton
             buttonProps={{
               className:
