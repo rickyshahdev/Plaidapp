@@ -13,7 +13,7 @@ class Navbar extends Component {
               }}
               className="col s5 brand-logo center black-text"
             >
-           Unite Bank
+        {/*  United Bank */}
             </Link>
           </div>
         </nav>
